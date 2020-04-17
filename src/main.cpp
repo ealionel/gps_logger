@@ -17,9 +17,7 @@ gps_fix fix;
 
 LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
 
-LCDView *currentView;
-
-LCDView views[4] = {};
+LCDViewManager views(lcd);
 
 void setup() {
     Serial.begin(9600);
@@ -31,7 +29,9 @@ void setup() {
 
     lcd.begin(8, 2);
 
-    currentView = &views[0];
+    views.addView(new TestView);
+    views.addView(new TestView2);
+    views.selectView(0);
 }
 
 void loop() {
@@ -39,16 +39,14 @@ void loop() {
 
     switch (pressedButton) {
         case SW_1:
-            lcd.clear();
-            currentView = &(views[0]);
+            views.selectView(0);
             break;
         case SW_2:
-            lcd.clear();
-            currentView = &(views[1]);
+            views.selectView(1);
             break;
     }
 
-    currentView->render(lcd);
+    views.renderView();
 
     // while (gps.available( gpsPort )) {
     //     fix = gps.read();
