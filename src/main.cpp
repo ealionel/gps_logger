@@ -6,6 +6,8 @@
 #include <SPI.h>
 #include <Streamers.h>
 
+#include "logger.h"
+
 #include "buttons.h"
 #include "lcdView.h"
 #define TX_PIN 2
@@ -16,8 +18,47 @@ gps_fix fix;
 #define VBAT_PIN A0  // Battery voltage pin
 
 LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
-
 LCDViewManager views(lcd);
+
+File root;
+GPSLogger logger;
+
+void printDirectory(File &dir, int numTabs) {
+    while (true) {
+        File entry = dir.openNextFile();
+        if (!entry) {
+            Serial.println("No more files");
+            // no more files
+            break;
+        }
+        for (uint8_t i = 0; i < numTabs; i++) {
+            Serial.print('\t');
+        }
+        Serial.print(entry.name());
+        if (entry.isDirectory()) {
+            Serial.println("/");
+            printDirectory(entry, numTabs + 1);
+        } else {
+            // files have sizes, directories do not
+            Serial.print("\t\t");
+            Serial.println(entry.size(), DEC);
+        }
+        entry.close();
+    }
+}
+
+void printFile(String path) {
+    File file = SD.open(path, FILE_READ);
+
+    if (file) {
+        while(file.available()) {
+            Serial.write(file.read());
+        }
+    } else {
+        Serial.print("Cannot open ");
+        Serial.println(path);
+    }
+}
 
 void setup() {
     Serial.begin(9600);
@@ -27,11 +68,23 @@ void setup() {
     pinMode(BP1_PIN, INPUT);
     pinMode(BPEN_PIN, INPUT);
 
-    lcd.begin(8, 2);
+    if (!SD.begin(SS_PIN)) {
+        Serial.println("SD Card failed");
+    } else {
+        Serial.println("SD Card Initialized");
+    }
 
-    views.addView(new TestView);
-    views.addView(new TestView2);
+    views.addView(new DefaultView);
+    views.addView(new CoordinateView);
     views.selectView(0);
+
+    SD.mkdir("/test");
+    logger.setLogFile("/test/logtest.txt");
+    logger.enable();
+
+    printFile("/test/logtest.txt");
+
+    lcd.begin(8, 2);
 }
 
 void loop() {
@@ -48,23 +101,29 @@ void loop() {
 
     views.renderView();
 
-    // while (gps.available( gpsPort )) {
-    //     fix = gps.read();
+    while (gps.available( gpsPort )) {
+        Serial.println("gps data available");
+        fix = gps.read();
 
-    //     DEBUG_PORT.print(F("Location: "));
-    //     if (fix.valid.location) {
-    //         DEBUG_PORT.print(fix.latitude(), 6);
-    //         DEBUG_PORT.print(',');
-    //         DEBUG_PORT.print(fix.longitude(), 6);
-    //         lcd.setCursor(0, 0);
-    //         lcd.print(fix.latitude());
-    //         lcd.setCursor(0, 1);
-    //         lcd.print(fix.longitude());
-    //     }
+        logger.log(fix);
 
-    //     DEBUG_PORT.print(F(", Altitude: "));
-    //     if (fix.valid.altitude) DEBUG_PORT.print(fix.altitude());
+        lcd.setCursor(0,1);
+        lcd.print("OK");
 
-    //     DEBUG_PORT.println();
-    // }
+        // DEBUG_PORT.print(F("Location: "));
+        // if (fix.valid.location) {
+        //     DEBUG_PORT.print(fix.latitude(), 6);
+        //     DEBUG_PORT.print(',');
+        //     DEBUG_PORT.print(fix.longitude(), 6);
+        //     lcd.setCursor(0, 0);
+        //     lcd.print(fix.latitude());
+        //     lcd.setCursor(0, 1);
+        //     lcd.print(fix.longitude());
+        // }
+
+        // DEBUG_PORT.print(F(", Altitude: "));
+        // if (fix.valid.altitude) DEBUG_PORT.print(fix.altitude());
+
+        // DEBUG_PORT.println();
+    }
 }

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
+#include <NMEAGPS.h>
 
 #include "buttons.h"
 
@@ -21,7 +22,6 @@ class LCDViewManager {
     void addView(LCDView* view);
 
     void renderView();
-
    private:
     LCDView* current;
     LCDView* views[MAX_VIEWS];
@@ -30,25 +30,13 @@ class LCDViewManager {
     uint8_t nbViews = 0;
 };
 
-class TestView : public LCDView {
-   public:
-    void render(LiquidCrystal& lcd) {
-        lcd.setCursor(0, 0);
-        lcd.print("vue 1");
-    }
-};
-
-class TestView2 : public LCDView {
-   public:
-    void render(LiquidCrystal& lcd) {
-        lcd.setCursor(0, 0);
-        lcd.print("vue 2 !");
-    }
-};
-
 class CoordinateView : public LCDView {
    public:
     void render(LiquidCrystal& lcd);
+    void render(LiquidCrystal& lcd, gps_fix fix);
 };
 
-void setView(LCDView& view);
+class DefaultView : public LCDView {
+   public:
+    void render(LiquidCrystal& lcd);
+};
