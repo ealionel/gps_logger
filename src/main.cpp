@@ -1,17 +1,19 @@
 #include <Arduino.h>
-#include <GPSport.h>
 #include <LiquidCrystal.h>
 #include <NMEAGPS.h>
 #include <SD.h>
 #include <SPI.h>
 #include <Streamers.h>
 
-#include "logger.h"
+#define TX_PIN 2
+#define RX_PIN 3
+
+#include <GPSport.h>
 
 #include "buttons.h"
 #include "lcdView.h"
-#define TX_PIN 2
-#define RX_PIN 3
+#include "logger.h"
+
 NMEAGPS gps;
 gps_fix fix;
 
@@ -51,7 +53,7 @@ void printFile(String path) {
     File file = SD.open(path, FILE_READ);
 
     if (file) {
-        while(file.available()) {
+        while (file.available()) {
             Serial.write(file.read());
         }
     } else {
@@ -84,6 +86,8 @@ void setup() {
 
     printFile("/test/logtest.txt");
 
+    gpsPort.listen();
+
     lcd.begin(8, 2);
 }
 
@@ -97,18 +101,24 @@ void loop() {
         case SW_2:
             views.selectView(1);
             break;
+        case SW_3:
+            if (SD.exists("/test/logtest.txt")) {
+                SD.remove("/test/logtest.txt");
+            }
+            break;
     }
 
     views.renderView();
 
-    while (gps.available( gpsPort )) {
+    while (gps.available(gpsPort)) {
         Serial.println("gps data available");
         fix = gps.read();
 
-        logger.log(fix);
-
-        lcd.setCursor(0,1);
-        lcd.print("OK");
+        if (fix.valid.location) {
+            logger.log(fix);
+            lcd.setCursor(0, 1);
+            lcd.print("OK");
+        }
 
         // DEBUG_PORT.print(F("Location: "));
         // if (fix.valid.location) {
@@ -125,5 +135,6 @@ void loop() {
         // if (fix.valid.altitude) DEBUG_PORT.print(fix.altitude());
 
         // DEBUG_PORT.println();
+        Serial.println("");
     }
 }

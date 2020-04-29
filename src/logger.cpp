@@ -27,9 +27,9 @@ void GPSLogger::log(gps_fix fix) {
 
             file.print(F(", Time: "));
             if (fix.valid.time) {
-                file.print(fix.dateTime.day);
-                file.print(F("/"));
                 file.print(fix.dateTime.date);
+                file.print(F("/"));
+                file.print(fix.dateTime.month);
                 file.print(F("/"));
                 file.print(fix.dateTime.year);
 
@@ -46,6 +46,8 @@ void GPSLogger::log(gps_fix fix) {
             if (fix.valid.speed) {
                 file.print(fix.speed_kph());
             }
+
+            file.println("");
 
         } else {
             Serial.print("LOGGER : Failed to open ");
