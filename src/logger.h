@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
@@ -11,7 +13,7 @@ class GPSLogger {
         void enable();
         void setLogFile(String path);
 
-        String buildCSVLine(gps_fix fix);
+        void writeCsvLine(File &file, gps_fix fix);
 
     private:
         bool isLogging = false;

@@ -1,7 +1,8 @@
 #include "lcdView.h"
 
-LCDViewManager::LCDViewManager(LiquidCrystal &targetLcd) {
+LCDViewManager::LCDViewManager(LiquidCrystal &targetLcd, ProgramContext &ctxt) {
     lcd = &targetLcd;
+    context = &ctxt;
 }
 
 LCDViewManager::~LCDViewManager() {
@@ -14,7 +15,7 @@ void LCDViewManager::renderView() {
     if (nbViews == 0) {
         return;
     }
-    current->render(*lcd); 
+    current->render(*lcd, *context); 
 }
 
 void LCDViewManager::setView(LCDView *view) {
@@ -32,6 +33,11 @@ void LCDViewManager::selectView(int id) {
         return;
         Serial.println("Incorrect view id");
     }
-
+    
+    currentView = id;
     setView(views[id]);
+}
+
+void LCDViewManager::selectNextView() {
+    selectView((currentView + 1) % nbViews);
 }

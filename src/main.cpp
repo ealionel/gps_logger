@@ -13,54 +13,20 @@
 #include "buttons.h"
 #include "lcdView.h"
 #include "logger.h"
+#include "helper.h"
+#include "globalState.h"
 
-NMEAGPS gps;
-gps_fix fix;
+
 
 #define VBAT_PIN A0  // Battery voltage pin
 
 LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
-LCDViewManager views(lcd);
+ProgramContext context;
+LCDViewManager views(lcd, context);
+NMEAGPS gps;
 
-File root;
-GPSLogger logger;
-
-void printDirectory(File &dir, int numTabs) {
-    while (true) {
-        File entry = dir.openNextFile();
-        if (!entry) {
-            Serial.println("No more files");
-            // no more files
-            break;
-        }
-        for (uint8_t i = 0; i < numTabs; i++) {
-            Serial.print('\t');
-        }
-        Serial.print(entry.name());
-        if (entry.isDirectory()) {
-            Serial.println("/");
-            printDirectory(entry, numTabs + 1);
-        } else {
-            // files have sizes, directories do not
-            Serial.print("\t\t");
-            Serial.println(entry.size(), DEC);
-        }
-        entry.close();
-    }
-}
-
-void printFile(String path) {
-    File file = SD.open(path, FILE_READ);
-
-    if (file) {
-        while (file.available()) {
-            Serial.write(file.read());
-        }
-    } else {
-        Serial.print("Cannot open ");
-        Serial.println(path);
-    }
-}
+ButtonId buttonState;
+ButtonId lastButtonState;
 
 void setup() {
     Serial.begin(9600);
@@ -81,60 +47,54 @@ void setup() {
     views.selectView(0);
 
     SD.mkdir("/test");
-    logger.setLogFile("/test/logtest.txt");
-    logger.enable();
+    context.logger.setLogFile("/test/logtest.txt");
+    context.logger.enable();
 
     printFile("/test/logtest.txt");
 
-    gpsPort.listen();
-
+    buttonState = readButton();
+    
     lcd.begin(8, 2);
 }
 
 void loop() {
-    auto pressedButton = readButton();
+    buttonState = readButton();
 
-    switch (pressedButton) {
-        case SW_1:
-            views.selectView(0);
-            break;
-        case SW_2:
-            views.selectView(1);
-            break;
-        case SW_3:
-            if (SD.exists("/test/logtest.txt")) {
-                SD.remove("/test/logtest.txt");
-            }
-            break;
-    }
+    // switch (buttonState) {
+    //     case SW_1:
+    //         views.selectView(0);
+    //         break;
+    //     case SW_2:
+    //         views.selectView(1);
+    //         break;
+    //     case SW_3:
+    //         views.selectNextView();
+    //         break;
+    //     case SW_4:
+    //         if (SD.exists("/test/logtest.txt")) {
+    //             SD.remove("/test/logtest.txt");
+    //         }
+    //         break;
+    // }
 
-    views.renderView();
+    onButtonPush(SW_1, []()->void {
+        views.selectView(0);
+    });
+
+    onButtonPush(SW_2, []()->void {
+        views.selectView(1);
+    });
 
     while (gps.available(gpsPort)) {
-        Serial.println("gps data available");
-        fix = gps.read();
+        context.fix = gps.read();
 
-        if (fix.valid.location) {
-            logger.log(fix);
+        if (context.fix.valid.location) {
+            context.logger.log(context.fix);
             lcd.setCursor(0, 1);
             lcd.print("OK");
         }
-
-        // DEBUG_PORT.print(F("Location: "));
-        // if (fix.valid.location) {
-        //     DEBUG_PORT.print(fix.latitude(), 6);
-        //     DEBUG_PORT.print(',');
-        //     DEBUG_PORT.print(fix.longitude(), 6);
-        //     lcd.setCursor(0, 0);
-        //     lcd.print(fix.latitude());
-        //     lcd.setCursor(0, 1);
-        //     lcd.print(fix.longitude());
-        // }
-
-        // DEBUG_PORT.print(F(", Altitude: "));
-        // if (fix.valid.altitude) DEBUG_PORT.print(fix.altitude());
-
-        // DEBUG_PORT.println();
-        Serial.println("");
     }
+
+    views.renderView();
+    lastButtonState = buttonState;
 }

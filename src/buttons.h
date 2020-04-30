@@ -1,4 +1,7 @@
+#pragma once
 #include <Arduino.h>
+#include <LiquidCrystal.h>
+#include "globalState.h"
 
 // Digital pins for buttons
 #define BP1_PIN 15
@@ -11,7 +14,7 @@
 #define ABPEN_PIN A3
 
 
-// Physical buttons definition
+// Physical buttons state definition
 #define SW_NONE 0 // 011
 #define SW_1 1 // 100
 #define SW_2 2 // 101
@@ -27,3 +30,15 @@ typedef uint8_t ButtonId;
 // 3 = SW_3
 // 4 = SW_4
 ButtonId readButton();
+
+void onButtonPush(ButtonId target, void (*f)(void) );
+void onButtonPush(ButtonId target, LiquidCrystal &lcd, void (*f)(LiquidCrystal&) );
+
+template <typename T>
+void onButtonPush(ButtonId target, T* obj, void (*callback)(T&)) {
+    if (buttonState != lastButtonState) {
+        if (buttonState == target) {
+            callback(*obj);
+        }
+    }
+}
