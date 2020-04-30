@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-// extern LiquidCrystal lcd;
+extern LiquidCrystal lcd;
 extern unsigned char buttonState;
 extern unsigned char lastButtonState;
 

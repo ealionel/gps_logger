@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _H_BUTTONS
+#define _H_BUTTONS
+
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include "globalState.h"
@@ -32,7 +34,6 @@ typedef uint8_t ButtonId;
 ButtonId readButton();
 
 void onButtonPush(ButtonId target, void (*f)(void) );
-void onButtonPush(ButtonId target, LiquidCrystal &lcd, void (*f)(LiquidCrystal&) );
 
 template <typename T>
 void onButtonPush(ButtonId target, T* obj, void (*callback)(T&)) {
@@ -42,3 +43,5 @@ void onButtonPush(ButtonId target, T* obj, void (*callback)(T&)) {
         }
     }
 }
+
+#endif

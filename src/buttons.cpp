@@ -18,12 +18,3 @@ void onButtonPush(ButtonId target, void (*callback)(void)) {
         }
     }
 }
-
-void onButtonPush(ButtonId target, LiquidCrystal &lcd, void (*callback)(LiquidCrystal&)) {
-    if (buttonState != lastButtonState) {
-        if (buttonState == target) {
-            callback(lcd);
-        }
-    }
-}
-

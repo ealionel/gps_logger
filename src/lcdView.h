@@ -8,13 +8,13 @@
 #define MAX_VIEWS 4
 class LCDView {
    public:
-    virtual void render(LiquidCrystal& lcd, ProgramContext& context) {}
+    virtual void render(ProgramContext& context) {}
     virtual ~LCDView() {}
 };
 
 class LCDViewManager {
    public:
-    LCDViewManager(LiquidCrystal& lcd, ProgramContext& context);
+    LCDViewManager(ProgramContext& context);
     ~LCDViewManager();
 
     void setView(LCDView* view);
@@ -28,7 +28,6 @@ class LCDViewManager {
    private:
     LCDView* current;
     LCDView* views[MAX_VIEWS];
-    LiquidCrystal* lcd;
     ProgramContext* context;
 
     uint8_t currentView;
@@ -37,11 +36,11 @@ class LCDViewManager {
 
 class CoordinateView : public LCDView {
    public:
-    void render(LiquidCrystal& lcd, ProgramContext& context);
+    void render(ProgramContext& context);
 };
 
 class DefaultView : public LCDView {
    public:
-    void render(LiquidCrystal& lcd, ProgramContext& context);
+    void render(ProgramContext& context);
     int state = 0;
 };

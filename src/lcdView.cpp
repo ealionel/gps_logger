@@ -1,6 +1,8 @@
 #include "lcdView.h"
 
-void CoordinateView::render(LiquidCrystal& lcd, ProgramContext& context) {
+#include "globalState.h"
+
+void CoordinateView::render(ProgramContext& context) {
     lcd.setCursor(0, 0);
     lcd.print("Coords:");
     if (context.fix.valid.location) {
@@ -9,7 +11,7 @@ void CoordinateView::render(LiquidCrystal& lcd, ProgramContext& context) {
     }
 }
 
-void DefaultView::render(LiquidCrystal& lcd, ProgramContext& context) {
+void DefaultView::render(ProgramContext& context) {
     lcd.setCursor(0, 0);
     lcd.print("Hello !");
 

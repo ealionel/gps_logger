@@ -22,7 +22,7 @@
 
 LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
 ProgramContext context;
-LCDViewManager views(lcd, context);
+LCDViewManager views(context);
 NMEAGPS gps;
 
 ButtonId buttonState;
