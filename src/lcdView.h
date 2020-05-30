@@ -1,3 +1,6 @@
+#ifndef LCDVIEW_H_INCLUDED
+#define LCDVIEW_H_INCLUDED
+
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <NMEAGPS.h>
@@ -44,3 +47,5 @@ class DefaultView : public LCDView {
     void render(ProgramContext& context);
     int state = 0;
 };
+
+#endif

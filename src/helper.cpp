@@ -1,7 +1,5 @@
 #include "helper.h"
 
-
-
 void printDirectory(File &dir, int numTabs) {
     while (true) {
         File entry = dir.openNextFile();
@@ -37,4 +35,6 @@ void printFile(String path) {
         Serial.print("Cannot open ");
         Serial.println(path);
     }
+
+    file.close();
 }

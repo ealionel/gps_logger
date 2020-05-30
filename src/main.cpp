@@ -17,7 +17,6 @@
 #include "globalState.h"
 
 
-
 #define VBAT_PIN A0  // Battery voltage pin
 
 LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
@@ -42,15 +41,41 @@ void setup() {
         Serial.println("SD Card Initialized");
     }
 
+
+    context.logger.init();
+
+    // context.logger.writeFile("test", "bonjour");
+    // context.logger.writeFile("test2", "bonjour");
+    // context.logger.writeFile("test3", "bonjour");
+    // context.logger.writeFile("wolala3", "bonjour");
+    // context.logger.writeFile("wolala4", "bonjour");
+    // context.logger.writeFile("wolala5", "bonjour");
+
+
+    context.logger.clearDirectory();
+    
+    File dir = SD.open("/logs");
+    printDirectory(dir, 0);
+    dir.close();
+
+    // File dir2 = SD.open("/logs");
+    // printDirectory(dir, 0);
+    // dir2.close();
+    // File entry = dir.openNextFile();
+    // Serial.println(entry.name());
+
+
+    // LogIndexEntry entry = createLogIndexEntry(-1, "1.csv", 10, "30/05/2020");
+    // context.logger.addIndexEntry(entry);
+
+    context.logger.printIndexFile();
+
+
+
     views.addView(new DefaultView);
     views.addView(new CoordinateView);
     views.selectView(0);
 
-    SD.mkdir("/test");
-    context.logger.setLogFile("/test/logtest.txt");
-    context.logger.enable();
-
-    printFile("/test/logtest.txt");
 
     buttonState = readButton();
     
@@ -60,22 +85,6 @@ void setup() {
 void loop() {
     buttonState = readButton();
 
-    // switch (buttonState) {
-    //     case SW_1:
-    //         views.selectView(0);
-    //         break;
-    //     case SW_2:
-    //         views.selectView(1);
-    //         break;
-    //     case SW_3:
-    //         views.selectNextView();
-    //         break;
-    //     case SW_4:
-    //         if (SD.exists("/test/logtest.txt")) {
-    //             SD.remove("/test/logtest.txt");
-    //         }
-    //         break;
-    // }
 
     onButtonPush(SW_1, []()->void {
         views.selectView(0);

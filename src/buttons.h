@@ -1,5 +1,5 @@
-#ifndef _H_BUTTONS
-#define _H_BUTTONS
+#ifndef BUTTONS_H_INCLUDED
+#define BUTTONS_H_INCLUDED
 
 #include <Arduino.h>
 #include <LiquidCrystal.h>
@@ -35,6 +35,9 @@ ButtonId readButton();
 
 void onButtonPush(ButtonId target, void (*f)(void) );
 
+/**
+ * 
+ */
 template <typename T>
 void onButtonPush(ButtonId target, T* obj, void (*callback)(T&)) {
     if (buttonState != lastButtonState) {

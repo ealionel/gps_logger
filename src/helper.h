@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HELPER_H_INCLUDED
+#define HELPER_H_INCLUDED
 
 #include <Arduino.h>
 #include <SD.h>
@@ -13,3 +14,5 @@ typedef struct {
 
 void printDirectory(File &dir, int numTabs);
 void printFile(String path);
+
+#endif
