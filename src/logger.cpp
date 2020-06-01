@@ -2,13 +2,18 @@
 
 #include "helper.h"
 
-#define INDEX_FILE_NAME "index"
+#define INDEX_FILE_NAME "INDEX"
 
-LogIndexEntry createLogIndexEntry(int id, String fileName, int nbLogs,
+LogIndexEntry createLogIndexEntry(int id, String fileName,
                                   String date) {
-    LogIndexEntry entry = {id, fileName, nbLogs, date};
-
+    LogIndexEntry entry = {id, fileName, date};
     return entry;
+}
+
+void printLogIndexEntry(LogIndexEntry entry) {
+    Serial.println("id\t" + String(entry.id, 10));
+    Serial.println("name\t" + entry.fileName);
+    Serial.println("date\t" + entry.date);
 }
 
 GPSLogger::GPSLogger() {}
@@ -26,9 +31,10 @@ void GPSLogger::init(String root) {
         } else {
             rootFile.close();
         }
+    } else {
+        SD.mkdir(root);
     }
 
-    SD.mkdir(root);
 
     if (!SD.exists(getIndexPath())) {
         // Crée le fichier index s'il n'existe pas encore
@@ -38,6 +44,11 @@ void GPSLogger::init(String root) {
     }
 
     nbIndexEntries = countIndexEntries();
+
+    if (nbIndexEntries == 0) {
+        // Si aucun fichier de log n'est présent on en crée au moins un
+        newLogFile();
+    }
 }
 
 int GPSLogger::countIndexEntries() {
@@ -56,39 +67,47 @@ int GPSLogger::getNbIndexEntries() { return nbIndexEntries; }
 void GPSLogger::addIndexEntry(LogIndexEntry entry) {
     File index = SD.open(getIndexPath(), FILE_WRITE);
 
-    index.print(getNbIndexEntries());
+    index.print(entry.id);
     index.print(F(","));
     index.print(entry.fileName);
-    index.print(F(","));
-    index.print(entry.nbLogs);
     index.print(F(","));
     index.print(entry.date);
     index.print(F("\n"));
 
     index.close();
+
+    nbIndexEntries++;
 }
 
 void GPSLogger::clearDirectory() {
-    File dir = SD.open(getLogPath());
+    File dir = SD.open(root);
 
     File entry;
-    do {
+    while (true) {
         entry = dir.openNextFile();
 
-        if (entry) {
-            if (SD.remove(root + entry.name())) {
-                Serial.println("Removed " + root + entry.name());
-            } else {
-                Serial.println("Coudln't remove " + root + entry.name());
-                dir.close();
-                break;
-            }
+        if (!entry) {
+            Serial.println("Done");
+            break;
         }
 
-    } while (entry);
+        String fileName = root + entry.name();
 
+        if (SD.remove(fileName)) {
+            Serial.print("Removed " + fileName);
+            Serial.print(F("\n"));
+        } else {
+            Serial.print("Coudln't remove " + fileName);
+            Serial.print(F("\n"));
+            break;
+        }
+        entry.close();
+    }
+
+    dir.close();
     initIndexFile();
     nbIndexEntries = 0;
+    newLogFile();
 }
 
 void GPSLogger::disable() { isLogging = false; }
@@ -103,7 +122,12 @@ String GPSLogger::getLogPath() { return root + logFile; }
 
 String GPSLogger::getIndexPath() { return root + INDEX_FILE_NAME; }
 
-size_t GPSLogger::dirCount() {}
+void GPSLogger::newLogFile() {
+    logFile = String(getNbIndexEntries(), 10) + ".CSV";
+    LogIndexEntry entry = createLogIndexEntry(getNbIndexEntries(), logFile, "2020");
+    addIndexEntry(entry);
+    writeFile(logFile, ""); // Crée un fichier vide
+}
 
 void GPSLogger::log(gps_fix fix) {
     if (isLogging) {
@@ -161,8 +185,26 @@ void GPSLogger::writeCsvLine(File &file, gps_fix fix) {
 void GPSLogger::printIndexFile() { printFile(getIndexPath()); }
 
 void GPSLogger::initIndexFile() {
-    File indexFile = SD.open(getIndexPath(), FILE_WRITE);
-    indexFile.close();
+    File index = SD.open(getIndexPath(), FILE_WRITE);
+    index.close();
     Serial.print("Initializing ");
     Serial.println(getIndexPath());
+}
+
+LogIndexEntry* GPSLogger::loadIndexFile() {
+    File index = SD.open(getIndexPath(), FILE_READ);
+
+    LogIndexEntry *entries = new LogIndexEntry[getNbIndexEntries()];
+
+    
+    for (int i = 0; i < getNbIndexEntries(); i++) {
+        int id = index.readStringUntil(',').toInt();
+        String name = index.readStringUntil(',');
+        String date = index.readStringUntil('\n');
+
+        entries[i] = createLogIndexEntry(id, name, date);
+    }
+
+    index.close();
+    return entries;
 }

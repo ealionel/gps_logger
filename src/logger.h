@@ -9,11 +9,12 @@
 typedef struct LogIndexEntry {
     int id;
     String fileName;
-    int nbLogs; // Nombre de points enregistrés
+    // int nbLogs; // Nombre de points enregistrés
     String date;
-} LogIndex;
+} LogIndexEntry;
 
-LogIndexEntry createLogIndexEntry(int id, String fileName, int nbLogs, String date);
+LogIndexEntry createLogIndexEntry(int id, String fileName, String date);
+void printLogIndexEntry(LogIndexEntry entry);
 
 class GPSLogger {
     public:
@@ -22,7 +23,7 @@ class GPSLogger {
         
         GPSLogger();
 
-        void init(String root = "/logs/");
+        void init(String root = "/LOGS/");
 
         void log(gps_fix fix);
         void disable();
@@ -53,11 +54,10 @@ class GPSLogger {
         // Retourne le chemin absolu du fichier index de ce repertoire
         String getIndexPath();
 
-        // Retourne nombre de repertoires dans le dossier root
-        size_t dirCount();
-
         void writeCsvLine(File &file, gps_fix fix);
         void writeFile(String filename, String line);
+
+        void newLogFile();
 
         int logId();
 

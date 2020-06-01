@@ -6,6 +6,7 @@ void printDirectory(File &dir, int numTabs) {
         if (!entry) {
             Serial.println("No more files");
             // no more files
+            // dir.rewindDirectory();
             break;
         }
         for (uint8_t i = 0; i < numTabs; i++) {
@@ -32,7 +33,7 @@ void printFile(String path) {
             Serial.write(file.read());
         }
     } else {
-        Serial.print("Cannot open ");
+        Serial.print("printFile: Cannot open ");
         Serial.println(path);
     }
 

@@ -41,35 +41,20 @@ void setup() {
         Serial.println("SD Card Initialized");
     }
 
-
     context.logger.init();
 
-    // context.logger.writeFile("test", "bonjour");
-    // context.logger.writeFile("test2", "bonjour");
-    // context.logger.writeFile("test3", "bonjour");
-    // context.logger.writeFile("wolala3", "bonjour");
-    // context.logger.writeFile("wolala4", "bonjour");
-    // context.logger.writeFile("wolala5", "bonjour");
-
-
-    context.logger.clearDirectory();
-    
-    File dir = SD.open("/logs");
-    printDirectory(dir, 0);
-    dir.close();
-
-    // File dir2 = SD.open("/logs");
-    // printDirectory(dir, 0);
-    // dir2.close();
-    // File entry = dir.openNextFile();
-    // Serial.println(entry.name());
-
-
-    // LogIndexEntry entry = createLogIndexEntry(-1, "1.csv", 10, "30/05/2020");
-    // context.logger.addIndexEntry(entry);
+    File dir2 = SD.open("/LOGS");
+    printDirectory(dir2, 0);
 
     context.logger.printIndexFile();
 
+    LogIndexEntry* entries = context.logger.loadIndexFile();
+
+    for (int i = 0; i < context.logger.getNbIndexEntries(); i++) {
+        printLogIndexEntry(entries[i]);
+    }
+
+    delete [] entries;
 
 
     views.addView(new DefaultView);
@@ -84,7 +69,6 @@ void setup() {
 
 void loop() {
     buttonState = readButton();
-
 
     onButtonPush(SW_1, []()->void {
         views.selectView(0);
