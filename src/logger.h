@@ -19,7 +19,7 @@ void printLogIndexEntry(LogIndexEntry entry);
 class GPSLogger {
     public:
         bool isLogging = false;
-        unsigned int logInterval = 1;
+        int logInterval = 1;
         
         GPSLogger();
 
@@ -67,6 +67,7 @@ class GPSLogger {
         String root;
 
         int nbIndexEntries;
+        int logCounter = 1; // Compteur pour l'intervalle d'enregistrement
 };
 
 #endif

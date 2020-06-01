@@ -7,11 +7,19 @@
 
 #include "buttons.h"
 #include "helper.h"
+#include "logger.h"
 
 #define MAX_VIEWS 4
 class LCDView {
    public:
+    // Méthode principale pour faire rendu sur l'écran
     virtual void render(ProgramContext& context) {}
+
+    // Méthode appelée lorsque la vue est chargée
+    virtual void onEnter(ProgramContext& context) {}
+
+    // Méthode appelée lorsque la vue est déchargée
+    virtual void onExit(ProgramContext& context) {}
     virtual ~LCDView() {}
 };
 
@@ -46,6 +54,27 @@ class DefaultView : public LCDView {
    public:
     void render(ProgramContext& context);
     int state = 0;
+};
+
+/**
+ * Vue qui affiche les différents parcours enregistrés
+ */
+class IndexView : public LCDView {
+   public:
+    void render(ProgramContext& context);
+    void onEnter(ProgramContext& context);
+    void onExit(ProgramContext& context);
+
+    int lineScroll = 0;
+    int nbEntries = 0;
+    LogIndexEntry* entries;
+};
+
+class SettingsView : public LCDView {
+   public:
+    void render(ProgramContext& context);
+    void onEnter(ProgramContext& context);
+    void onExit(ProgramContext& context);
 };
 
 #endif

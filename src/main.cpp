@@ -48,45 +48,32 @@ void setup() {
 
     context.logger.printIndexFile();
 
-    LogIndexEntry* entries = context.logger.loadIndexFile();
-
-    for (int i = 0; i < context.logger.getNbIndexEntries(); i++) {
-        printLogIndexEntry(entries[i]);
-    }
-
-    delete [] entries;
-
-
     views.addView(new DefaultView);
     views.addView(new CoordinateView);
+    views.addView(new IndexView);
+    // views.addView(new SettingsView);
     views.selectView(0);
 
 
     buttonState = readButton();
     
     lcd.begin(8, 2);
+    context.logger.setInterval(5);
+    context.logger.enable();
 }
 
 void loop() {
     buttonState = readButton();
 
-    onButtonPush(SW_1, []()->void {
-        views.selectView(0);
-    });
-
-    onButtonPush(SW_2, []()->void {
-        views.selectView(1);
+    onButtonPush(SW_4, []()->void {
+        views.selectNextView();
     });
 
     while (gps.available(gpsPort)) {
         context.fix = gps.read();
-
-        if (context.fix.valid.location) {
-            context.logger.log(context.fix);
-            lcd.setCursor(0, 1);
-            lcd.print("OK");
-        }
+        context.logger.log(context.fix);
     }
+
 
     views.renderView();
     lastButtonState = buttonState;

@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 class LCDViewManager; // forward declaration
+struct ProgramContext;
 
 extern LiquidCrystal lcd;
 extern LCDViewManager views;

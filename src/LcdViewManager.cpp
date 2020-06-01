@@ -18,7 +18,11 @@ void LCDViewManager::renderView() {
 }
 
 void LCDViewManager::setView(LCDView *view) {
+    if(current) {
+        current->onExit(*context);
+    }
     lcd.clear();
+    view->onEnter(*context);
     current = view;
 };
 
