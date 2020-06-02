@@ -47,4 +47,16 @@ void onButtonPush(ButtonId target, T* obj, void (*callback)(T&)) {
     }
 }
 
+/**
+ * Cette fonction devrait être privilégiée car permet les closures
+ */
+template<typename F>
+void onButtonPush(ButtonId target, F &lambda) {
+    if (buttonState != lastButtonState) {
+        if (buttonState == target) {
+            lambda();
+        }
+    }
+}
+
 #endif

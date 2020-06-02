@@ -7,13 +7,13 @@
 #include <NMEAGPS.h>
 
 typedef struct LogIndexEntry {
-    int id;
+    uint8_t id;
     String fileName;
     // int nbLogs; // Nombre de points enregistrés
     String date;
 } LogIndexEntry;
 
-LogIndexEntry createLogIndexEntry(int id, String fileName, String date);
+LogIndexEntry createLogIndexEntry(uint8_t id, String fileName, String date);
 void printLogIndexEntry(LogIndexEntry entry);
 
 class GPSLogger {
@@ -62,9 +62,9 @@ class GPSLogger {
         int logId();
 
         void printIndexFile();
+        String root;
     private:
         String logFile;
-        String root;
 
         int nbIndexEntries;
         int logCounter = 1; // Compteur pour l'intervalle d'enregistrement

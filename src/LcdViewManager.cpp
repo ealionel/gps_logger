@@ -4,11 +4,7 @@ LCDViewManager::LCDViewManager(ProgramContext &ctxt) {
     context = &ctxt;
 }
 
-LCDViewManager::~LCDViewManager() {
-    for (int i = 0; i < nbViews; i++) {
-        delete views[i];
-    }
-}
+LCDViewManager::~LCDViewManager() {}
 
 void LCDViewManager::renderView() {
     if (nbViews == 0) {
@@ -34,7 +30,6 @@ void LCDViewManager::addView(LCDView *view) {
 void LCDViewManager::selectView(int id) {
     if (id > nbViews || id > MAX_VIEWS - 1 || id < 0) {
         return;
-        Serial.println("Incorrect view id");
     }
 
     currentView = id;

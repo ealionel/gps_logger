@@ -4,13 +4,13 @@ void printDirectory(File &dir, int numTabs) {
     while (true) {
         File entry = dir.openNextFile();
         if (!entry) {
-            Serial.println("No more files");
+            Serial.println(F("No more files"));
             // no more files
             // dir.rewindDirectory();
             break;
         }
         for (uint8_t i = 0; i < numTabs; i++) {
-            Serial.print('\t');
+            Serial.print(F("\t"));
         }
         Serial.print(entry.name());
         if (entry.isDirectory()) {
@@ -18,7 +18,7 @@ void printDirectory(File &dir, int numTabs) {
             printDirectory(entry, numTabs + 1);
         } else {
             // files have sizes, directories do not
-            Serial.print("\t\t");
+            Serial.print(F("\t\t"));
             Serial.println(entry.size(), DEC);
         }
         entry.close();
@@ -33,8 +33,8 @@ void printFile(String path) {
             Serial.write(file.read());
         }
     } else {
-        Serial.print("printFile: Cannot open ");
-        Serial.println(path);
+        // Serial.print("printFile: Cannot open ");
+        // Serial.println(path);
     }
 
     file.close();

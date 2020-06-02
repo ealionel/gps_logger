@@ -53,7 +53,6 @@ class CoordinateView : public LCDView {
 class DefaultView : public LCDView {
    public:
     void render(ProgramContext& context);
-    int state = 0;
 };
 
 /**
@@ -65,8 +64,8 @@ class IndexView : public LCDView {
     void onEnter(ProgramContext& context);
     void onExit(ProgramContext& context);
 
-    int lineScroll = 0;
-    int nbEntries = 0;
+    uint8_t lineScroll = 0;
+    uint8_t nbEntries = 0;
     LogIndexEntry* entries;
 };
 

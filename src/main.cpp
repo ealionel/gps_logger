@@ -27,6 +27,10 @@ NMEAGPS gps;
 ButtonId buttonState;
 ButtonId lastButtonState;
 
+DefaultView defaultView;
+CoordinateView coordinateView;
+IndexView indexView;
+
 void setup() {
     Serial.begin(9600);
     gpsPort.begin(4800);
@@ -36,9 +40,7 @@ void setup() {
     pinMode(BPEN_PIN, INPUT);
 
     if (!SD.begin(SS_PIN)) {
-        Serial.println("SD Card failed");
-    } else {
-        Serial.println("SD Card Initialized");
+        Serial.println(F("SD not ok"));
     }
 
     context.logger.init();
@@ -48,9 +50,10 @@ void setup() {
 
     context.logger.printIndexFile();
 
-    views.addView(new DefaultView);
-    views.addView(new CoordinateView);
-    views.addView(new IndexView);
+    views.addView(&defaultView);
+    views.addView(&coordinateView);
+    views.addView(&indexView);
+
     // views.addView(new SettingsView);
     views.selectView(0);
 
@@ -59,8 +62,9 @@ void setup() {
     
     lcd.begin(8, 2);
     context.logger.setInterval(5);
-    context.logger.enable();
+    // context.logger.enable();
 }
+
 
 void loop() {
     buttonState = readButton();
@@ -69,11 +73,11 @@ void loop() {
         views.selectNextView();
     });
 
+
     while (gps.available(gpsPort)) {
         context.fix = gps.read();
         context.logger.log(context.fix);
     }
-
 
     views.renderView();
     lastButtonState = buttonState;

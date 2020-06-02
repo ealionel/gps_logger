@@ -8,12 +8,13 @@ void DefaultView::render(ProgramContext& context) {
     lcd.setCursor(0, 0);
     lcd.print("Hello !");
 
-    onButtonPush<DefaultView>(SW_3, this, [](DefaultView &r)->void{
-        r.state++;
-        Serial.print("State : ");
-        Serial.println(r.state);
-    });
+    auto clearDir = [&context]() {
+        // context.logger.clearDirectory();
+        Serial.println(context.logger.getIndexPath());
+    };
 
+    onButtonPush(SW_1, clearDir);
+ 
     if (context.fix.valid.time) {
         lcd.setCursor(0, 1);
 
@@ -53,7 +54,7 @@ void IndexView::render(ProgramContext& context) {
 
     if (nbEntries == 0) {
         lcd.setCursor(0, 0);
-        lcd.print("Empty");
+        lcd.print(F("Empty"));
         return;
     }
 

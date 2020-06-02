@@ -37,7 +37,7 @@ void GPSLogger::init(String root) {
     if (!SD.exists(getIndexPath())) {
         // Crée le fichier index s'il n'existe pas encore
         initIndexFile();
-        Serial.print(F("No index file found, creating "));
+        // Serial.print(F("No index file found, creating "));
         Serial.println(getIndexPath());
     }
 
@@ -45,6 +45,7 @@ void GPSLogger::init(String root) {
 
     if (nbIndexEntries == 0) {
         // Si aucun fichier de log n'est présent on en crée au moins un
+        // Serial.println("New log file");
         newLogFile();
     } else {
         logFile = String(getNbIndexEntries() - 1, 10) + ".CSV";
@@ -82,23 +83,25 @@ void GPSLogger::addIndexEntry(LogIndexEntry entry) {
 void GPSLogger::clearDirectory() {
     File dir = SD.open(root);
 
+    Serial.println(root);
+
     File entry;
     while (true) {
         entry = dir.openNextFile();
 
         if (!entry) {
-            Serial.println("Done");
+            // Serial.println("Done");
             break;
         }
 
         String fileName = root + entry.name();
 
         if (SD.remove(fileName)) {
-            Serial.print("Removed " + fileName);
-            Serial.print(F("\n"));
+            // Serial.print("Removed " + fileName);
+            // Serial.print(F("\n"));
         } else {
-            Serial.print("Coudln't remove " + fileName);
-            Serial.print(F("\n"));
+            // Serial.print("Coudln't remove " + fileName);
+            // Serial.print(F("\n"));
             break;
         }
         entry.close();
@@ -125,7 +128,7 @@ String GPSLogger::getLogPath() { return root + logFile; }
 String GPSLogger::getIndexPath() { return root + INDEX_FILE_NAME; }
 
 void GPSLogger::newLogFile() {
-    logFile = String(getNbIndexEntries(), 10) + ".CSV";
+    logFile = getNbIndexEntries() + ".CSV";
     LogIndexEntry entry =
         createLogIndexEntry(getNbIndexEntries(), logFile, "2020");
     addIndexEntry(entry);
@@ -137,10 +140,10 @@ void GPSLogger::log(gps_fix fix) {
         if (logCounter == logInterval) {
             File file = SD.open(getLogPath(), FILE_WRITE);
             if (file) {
-                Serial.println("Logging !");
+                // Serial.println("Logging !");
                 writeCsvLine(file, fix);
             } else {
-                Serial.print("LOGGER : Failed to open ");
+                // Serial.print("LOGGER : Failed to open ");
                 Serial.println(logFile);
             }
             file.close();
@@ -196,7 +199,7 @@ void GPSLogger::printIndexFile() { printFile(getIndexPath()); }
 void GPSLogger::initIndexFile() {
     File index = SD.open(getIndexPath(), FILE_WRITE);
     index.close();
-    Serial.print("Initializing ");
+    // Serial.print("Initializing ");
     Serial.println(getIndexPath());
 }
 
