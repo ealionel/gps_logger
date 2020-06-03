@@ -1,6 +1,6 @@
 #include "helper.h"
 
-void printDirectory(File &dir, int numTabs) {
+void printDirectory(File dir, int numTabs) {
     while (true) {
         File entry = dir.openNextFile();
         if (!entry) {
@@ -61,7 +61,7 @@ String formatTime(gps_fix fix, String fallbackValue) {
 }
 
 String secToMin(int seconds) {
-    return String(seconds / 60) + F("mn ") +(seconds % 60) + F("s");
+    return String(seconds / 60) + F("mn ") + (seconds % 60) + F("s");
 }
 
 template <typename F>

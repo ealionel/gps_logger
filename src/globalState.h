@@ -6,9 +6,12 @@
 
 #include "lcdView.h"
 
-#define LEFT_ARROW_LCD 0b01111111
+#define LCD_LEFT_ARROW  0b01111111 // <-
+#define LCD_RIGHT_ARROW 0b01111111 // ->
+#define LCD_CUSTOM_CHECKMARK byte(0)
 
-#define EEPROM_INTERVAL_ADDR 0
+// Adresse EEPROM du paramètre logInterval (int=2bytes)
+#define EEPROM_LOGINTERVAL_ADDR 0
 
 
 class LCDViewManager;  // forward declaration

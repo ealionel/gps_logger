@@ -12,7 +12,7 @@ typedef struct {
     gps_fix fix;
 } ProgramContext;
 
-void printDirectory(File &dir, int numTabs);
+void printDirectory(File dir, int numTabs);
 void printFile(String path);
 
 // Ajoute un "0" en préfixe si le nombre ne possède qu'un chiffre

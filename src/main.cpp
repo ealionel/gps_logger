@@ -50,7 +50,7 @@ void setup() {
 //    for (int i = 0 ; i < EEPROM.length() ; i++) {
 //     EEPROM.write(i, 0);
 //   }
-    Serial.begin(9600);
+    Serial.begin(115200);
     gpsPort.begin(4800);
 
     pinMode(BP0_PIN, INPUT);
@@ -74,11 +74,10 @@ void setup() {
     views.addView(&defaultView);
     views.addView(&coordinateView);
     views.addView(&indexView);
-    views.addView(&settingsView);
     views.addView(&newLogView);
+    views.addView(&settingsView);
 
     views.selectView(0);
-
 
     buttonState = readButton();
     

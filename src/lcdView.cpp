@@ -15,14 +15,22 @@ void DefaultView::render(ProgramContext& context) {
         }
     };
 
+    auto debug = [&context]() {
+        File logs = SD.open("/LOGS/");
+        printDirectory(logs, 0);
+        printFile(F("/LOGS/INDEX"));
+    };
+
     onButtonPush(SW_1, toggleLogging);
+
+    onButtonPush(SW_2, debug);
 
     lcd.setCursor(0, 0);
     lcd.print(F("GPS: "));
 
     lcd.setCursor(7, 0);
     if (context.fix.valid.location) {
-        lcd.write(byte(0));
+        lcd.write(LCD_CUSTOM_CHECKMARK);
     } else {
         lcd.write('x');
     }
@@ -33,7 +41,7 @@ void DefaultView::render(ProgramContext& context) {
 
     lcd.setCursor(7, 1);
     if (context.logger.isLogging) {
-        lcd.write(byte(0));
+        lcd.write(LCD_CUSTOM_CHECKMARK);
     } else {
         lcd.write('x');
     }
@@ -64,12 +72,15 @@ void CoordinateView::render(ProgramContext& context) {
 
 void IndexView::onEnter(ProgramContext& context) {
     lineScroll = 0;
+    // Serial.println("debug onenter");
     nbEntries = context.logger.getNbIndexEntries();
     entries = context.logger.loadIndexFile();
+
+    // Serial.println("debug onenter2");
 }
 
 void IndexView::onExit(ProgramContext& context) {
-    Serial.println("debug clear");
+    // Serial.println("debug clear");
     delete[] entries;
     entries = NULL;
 }
@@ -81,31 +92,41 @@ void IndexView::render(ProgramContext& context) {
         return;
     }
 
-    onButtonPush<IndexView>(SW_3, this, [](IndexView& v) -> void {
-        lcd.clear();
-        if (v.lineScroll < v.nbEntries - 1) {
-            v.lineScroll++;
-        }
-    });
+    auto sendFileCallback = [this, &context]() {
+        context.logger.sendFile(this->entries[lineScroll].fileName);
+    };
 
-    onButtonPush<IndexView>(SW_2, this, [](IndexView& v) -> void {
+    auto scrollDown = [this]() {
         lcd.clear();
-        if (v.lineScroll >= 1) {
-            v.lineScroll--;
+        if (this->lineScroll < this->nbEntries - 1) {
+            this->lineScroll++;
         }
-    });
+    };
+    
+    auto scrollUp = [this]() {
+        lcd.clear();
+        if (this->lineScroll >= 1) {
+            this->lineScroll--;
+        }
+    };
+
+    onButtonPush(SW_2, scrollUp);
+    onButtonPush(SW_3, scrollDown);
+    onButtonPush(SW_1, sendFileCallback);
 
     if (nbEntries > 0) {
         lcd.setCursor(0, 0);
-        lcd.print(entries[lineScroll].fileName);
+        lcd.print(F("RUN #"));
+        lcd.print(entries[lineScroll].id);
 
         lcd.setCursor(7, 0);
-        lcd.write(byte(LEFT_ARROW_LCD));
+        lcd.write(byte(LCD_LEFT_ARROW));
     }
 
     if (lineScroll < nbEntries - 1) {
         lcd.setCursor(0, 1);
-        lcd.print(entries[lineScroll + 1].fileName);
+        lcd.print(F("RUN #"));
+        lcd.print(entries[lineScroll + 1].id);
     }
 }
 
@@ -120,6 +141,7 @@ void NewLogView::render(ProgramContext& context) {
 
     lcd.setCursor(0,0);
     lcd.print(F("New log?"));
+    lcd.setCursor(0, 1);
     lcd.print(F("1 = YES"));
 
     onButtonPush(SW_1, startNew);
@@ -130,8 +152,6 @@ void NewLogView::render(ProgramContext& context) {
 SettingsView::SettingsView() {
     subViews[0] = &SettingsView::intervalSettings;
     subViews[1] = &SettingsView::clearSettings;
-
-    // subViews = {&intervalSettings, &clearSettings};
 }
 
 void SettingsView::onEnter(ProgramContext& context) {
@@ -139,7 +159,7 @@ void SettingsView::onEnter(ProgramContext& context) {
 }
 
 void SettingsView::onExit(ProgramContext& context) {
-    EEPROM.put(EEPROM_INTERVAL_ADDR, context.logger.logInterval);
+    EEPROM.put(EEPROM_LOGINTERVAL_ADDR, context.logger.logInterval);
 }
 
 

@@ -62,7 +62,9 @@ class GPSLogger {
         void newLogFile();
         void newLogFile(gps_fix fix);
 
-        int logId();
+        // Envoie le contenue de file (dans le dossier root) sur le port série
+        // en suivant un protocole de communication custom
+        void sendFile(String file);
 
         void printIndexFile();
         String root;
