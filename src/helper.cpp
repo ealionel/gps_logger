@@ -14,7 +14,7 @@ void printDirectory(File &dir, int numTabs) {
         }
         Serial.print(entry.name());
         if (entry.isDirectory()) {
-            Serial.println("/");
+            Serial.println(F("/"));
             printDirectory(entry, numTabs + 1);
         } else {
             // files have sizes, directories do not
@@ -38,4 +38,32 @@ void printFile(String path) {
     }
 
     file.close();
+}
+
+String twoDigit(int digit) {
+    return digit < 10 ? "0" + String(digit) : String(digit);
+}
+
+String formatDate(gps_fix fix, String fallbackValue) {
+    if (fix.valid.date)
+        return twoDigit(fix.dateTime.day) + String(F("/")) + twoDigit(fix.dateTime.month) + F("/") + fix.dateTime.year;
+
+    return fallbackValue;
+}
+
+String formatTime(gps_fix fix, String fallbackValue) {
+    if (fix.valid.time)
+        return twoDigit(fix.dateTime.hours) + String(F(":"))
+               + twoDigit(fix.dateTime.minutes) + F(":")
+               + twoDigit(fix.dateTime.seconds);
+
+    return fallbackValue;
+}
+
+String secToMin(int seconds) {
+    return String(seconds / 60) + F("mn ") +(seconds % 60) + F("s");
+}
+
+template <typename F>
+void setInterval(int interval, int currentTime, F& callback) {
 }

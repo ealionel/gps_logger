@@ -18,8 +18,10 @@ void printLogIndexEntry(LogIndexEntry entry);
 
 class GPSLogger {
     public:
+        bool sdFailed = false;
+
         bool isLogging = false;
-        int logInterval = 1;
+        int logInterval = 5;
         
         GPSLogger();
 
@@ -58,6 +60,7 @@ class GPSLogger {
         void writeFile(String filename, String line);
 
         void newLogFile();
+        void newLogFile(gps_fix fix);
 
         int logId();
 

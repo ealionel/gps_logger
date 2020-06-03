@@ -18,3 +18,4 @@ void onButtonPush(ButtonId target, void (*callback)(void)) {
         }
     }
 }
+

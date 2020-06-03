@@ -1,4 +1,5 @@
 #include "lcdView.h"
+#include "globalState.h"
 
 LCDViewManager::LCDViewManager(ProgramContext &ctxt) {
     context = &ctxt;
