@@ -86,11 +86,10 @@ void GPSLogger::addIndexEntry(LogIndexEntry entry) {
     File index = SD.open(getIndexPath(), FILE_WRITE);
 
     index.print(entry.id);
-    index.print(F(","));
+    comma(index);
     index.print(entry.fileName);
-    index.print(F(","));
-    index.print(entry.date);
-    index.print(F("\n"));
+    comma(index);
+    index.println(entry.date);
 
     index.close();
 
@@ -145,24 +144,23 @@ String GPSLogger::getLogPath() { return root + logFile; }
 
 String GPSLogger::getIndexPath() { return root + INDEX_FILE_NAME; }
 
-// void GPSLogger::newLogFile() {
-//     logFile = String(getNbIndexEntries()) + F(".CSV");
-//     LogIndexEntry entry = createLogIndexEntry(getNbIndexEntries(), logFile, "2020");
-//     addIndexEntry(entry);
-//     writeFile(logFile, ""); // Crée un fichier vide
-// }
-
 void GPSLogger::newLogFile(gps_fix fix) {
     logFile = getNbIndexEntries();
-    LogIndexEntry entry = createLogIndexEntry(getNbIndexEntries(), logFile, formatDate(fix));
+
+    LogIndexEntry entry = createLogIndexEntry(
+                            getNbIndexEntries(),
+                            logFile,
+                            formatDate(fix) + F(" ") + formatTime(fix)
+                        );
+
     addIndexEntry(entry);
     writeFile(logFile, ""); // Crée un fichier vide
 }
 
 void GPSLogger::log(gps_fix fix) {
     if (sdFailed) return;
-
-    if (isLogging && fix.valid.location) {
+    
+    if (isLogging && (fix.valid.location || alwaysLog)) {
         if (logCounter == logInterval) {
             File file = SD.open(getLogPath(), FILE_WRITE);
             if (file) {
@@ -187,36 +185,62 @@ void GPSLogger::writeFile(String filename, String line) {
 }
 
 void GPSLogger::writeCsvLine(File &file, gps_fix fix) {
-    if (fix.valid.time) {
-        file.print(fix.dateTime.date);
-        file.print(F("/"));
-        file.print(fix.dateTime.month);
-        file.print(F("/"));
-        file.print(fix.dateTime.year);
-    }
 
-    file.print(F(","));
-    if (fix.valid.time) {
-        file.print(fix.dateTime.hours);
-        file.print(F(":"));
-        file.print(fix.dateTime.minutes);
-        file.print(F(":"));
-        file.print(fix.dateTime.seconds);
-    }
-    file.print(F(","));
+    // DATE
+    if (fix.valid.time)
+        file.print(formatDate(fix));
+    
+    // TIME
+    comma(file);
+    if (fix.valid.time)
+        file.print(formatTime(fix));
+
+    // LATITUDE + LONGITUDE
+    comma(file);
     if (fix.valid.location) {
-        file.print(fix.latitude(), 6);
-        file.print(F(", "));
-        file.print(fix.longitude(), 6);
+        file.print(fix.latitude(), 7);
+        file.print(F(","));
+        file.print(fix.longitude(), 7);
     }
 
-    file.print(F(","));
+    // ALTITUDE (float-poing meters);
+    comma(file);
     if (fix.valid.altitude)
         file.print(fix.altitude());
 
-    file.print(F(","));
+    // SPEED (km/h)
+    comma(file);
     if (fix.valid.speed)
         file.print(fix.speed_kph());
+
+    // HEADING (floating-point degrees)
+    comma(file);
+    if (fix.valid.heading)
+        file.print(fix.heading());
+
+    // SATELLITES COUNT
+    comma(file);
+    file.print(gps.sat_count);
+
+    // SATELLITES INFO
+    comma(file);
+    if (fix.valid.satellites) {
+        for (uint8_t i = 0; i < gps.sat_count; i++) {
+            file.print(gps.satellites[i].id);
+            file.print(' ');
+            file.print(gps.satellites[i].elevation);
+            file.print('/');
+            file.print(gps.satellites[i].azimuth);
+            file.print('@');
+            if (gps.satellites[i].tracked)
+                file.print(gps.satellites[i].snr);
+            else
+                file.print('-');
+            
+            if (i != gps.sat_count - 1)
+                comma(file);
+        }
+    }
 
     file.println();
 }
@@ -249,15 +273,17 @@ LogIndexEntry *GPSLogger::loadIndexFile() {
     return entries;
 }
 
-void GPSLogger::sendFile(String fileName) {
+void GPSLogger::sendFile(String fileName, String date) {
     File file = SD.open(root + fileName, FILE_READ);
+    Serial.flush();
     Serial.println(F("CMD_FS"));
     Serial.println(fileName);
+    Serial.println(date);
     
     while (file.available() > 0) {
         Serial.write(file.read());
     }
-    Serial.println(F("\nCMD_FS_"));
+    Serial.println(F("CMD_FS_"));
 
     file.close();
 }

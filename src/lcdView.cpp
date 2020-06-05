@@ -15,15 +15,15 @@ void DefaultView::render(ProgramContext& context) {
         }
     };
 
-    auto debug = [&context]() {
-        File logs = SD.open("/LOGS/");
-        printDirectory(logs, 0);
-        printFile(F("/LOGS/INDEX"));
-    };
+    // auto debug = [&context]() {
+    //     File logs = SD.open("/LOGS/");
+    //     printDirectory(logs, 0);
+    //     printFile(F("/LOGS/INDEX"));
+    // };
+    // onButtonPush(SW_2, debug);
 
     onButtonPush(SW_1, toggleLogging);
 
-    onButtonPush(SW_2, debug);
 
     lcd.setCursor(0, 0);
     lcd.print(F("GPS: "));
@@ -64,7 +64,6 @@ void CoordinateView::render(ProgramContext& context) {
         lcd.setCursor(0,1);
 
         lcd.print(formatTime(context.fix));
-        // lcd.print(F("signal."));
     }
 }
 
@@ -72,15 +71,11 @@ void CoordinateView::render(ProgramContext& context) {
 
 void IndexView::onEnter(ProgramContext& context) {
     lineScroll = 0;
-    // Serial.println("debug onenter");
     nbEntries = context.logger.getNbIndexEntries();
     entries = context.logger.loadIndexFile();
-
-    // Serial.println("debug onenter2");
 }
 
 void IndexView::onExit(ProgramContext& context) {
-    // Serial.println("debug clear");
     delete[] entries;
     entries = NULL;
 }
@@ -93,7 +88,7 @@ void IndexView::render(ProgramContext& context) {
     }
 
     auto sendFileCallback = [this, &context]() {
-        context.logger.sendFile(this->entries[lineScroll].fileName);
+        context.logger.sendFile(this->entries[lineScroll].fileName, this->entries[lineScroll].date);
     };
 
     auto scrollDown = [this]() {
@@ -120,7 +115,7 @@ void IndexView::render(ProgramContext& context) {
         lcd.print(entries[lineScroll].id);
 
         lcd.setCursor(7, 0);
-        lcd.write(byte(LCD_LEFT_ARROW));
+        lcd.write(LCD_LEFT_ARROW);
     }
 
     if (lineScroll < nbEntries - 1) {
@@ -142,7 +137,8 @@ void NewLogView::render(ProgramContext& context) {
     lcd.setCursor(0,0);
     lcd.print(F("New log?"));
     lcd.setCursor(0, 1);
-    lcd.print(F("1 = YES"));
+    lcd.write(LCD_RIGHT_ARROW);
+    lcd.print(F("YES"));
 
     onButtonPush(SW_1, startNew);
 }
@@ -211,7 +207,8 @@ void SettingsView::clearSettings(ProgramContext& context) {
     lcd.setCursor(0, 0);
     lcd.print(F("Reset?"));
     lcd.setCursor(0, 1);
-    lcd.print(F("1 = YES"));
+    lcd.write(LCD_RIGHT_ARROW);
+    lcd.print(F("YES"));
 
     onButtonPush(SW_1, clearLogs);
 }

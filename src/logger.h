@@ -19,14 +19,13 @@ void printLogIndexEntry(LogIndexEntry entry);
 class GPSLogger {
     public:
         bool sdFailed = false;
-
         bool isLogging = false;
+        bool alwaysLog = true;
         int logInterval = 5;
         
         GPSLogger();
 
         void init(String root = "/LOGS/");
-
         void log(gps_fix fix);
         void disable();
         void enable();
@@ -59,12 +58,11 @@ class GPSLogger {
         void writeCsvLine(File &file, gps_fix fix);
         void writeFile(String filename, String line);
 
-        void newLogFile();
         void newLogFile(gps_fix fix);
 
         // Envoie le contenue de file (dans le dossier root) sur le port série
         // en suivant un protocole de communication custom
-        void sendFile(String file);
+        void sendFile(String file, String date);
 
         void printIndexFile();
         String root;

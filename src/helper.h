@@ -27,6 +27,10 @@ String formatTime(gps_fix fix, String fallbackValue = "");
 // Converti les secondes en une chaine de caractère représentant les minutes
 String secToMin(int seconds);
 
+// Technique pour réduire la mémoire flash utilisée
+// Économise 1 byte au lieu de faire file.print(F(","))
+void comma(File& file);
+
 template <typename F>
 void setInterval(int time, F& callback);
 

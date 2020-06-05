@@ -64,6 +64,10 @@ String secToMin(int seconds) {
     return String(seconds / 60) + F("mn ") + (seconds % 60) + F("s");
 }
 
+void comma(File& file) {
+    file.print(',');
+}
+
 template <typename F>
 void setInterval(int interval, int currentTime, F& callback) {
 }
