@@ -72,37 +72,38 @@ void CoordinateView::render(ProgramContext& context) {
 void IndexView::onEnter(ProgramContext& context) {
     lineScroll = 0;
     nbEntries = context.logger.getNbIndexEntries();
-    entries = context.logger.loadIndexFile();
+    entry = context.logger.loadLogEntry(lineScroll);
 }
 
-void IndexView::onExit(ProgramContext& context) {
-    delete[] entries;
-    entries = NULL;
-}
+void IndexView::onExit(ProgramContext& context) {}
 
 void IndexView::render(ProgramContext& context) {
     if (nbEntries == 0) {
         lcd.setCursor(0, 0);
-        lcd.print(F("Empty"));
+        lcd.print(F("-"));
         return;
     }
 
     auto sendFileCallback = [this, &context]() {
-        context.logger.sendFile(this->entries[lineScroll].fileName, this->entries[lineScroll].date);
+        context.logger.sendFile(this->entry.fileName, this->entry.date);
     };
 
-    auto scrollDown = [this]() {
+    auto scrollDown = [this, &context]() {
         lcd.clear();
         if (this->lineScroll < this->nbEntries - 1) {
             this->lineScroll++;
         }
+
+        this->entry = context.logger.loadLogEntry(lineScroll);
     };
     
-    auto scrollUp = [this]() {
+    auto scrollUp = [this, &context]() {
         lcd.clear();
         if (this->lineScroll >= 1) {
             this->lineScroll--;
         }
+
+        this->entry = context.logger.loadLogEntry(lineScroll);
     };
 
     onButtonPush(SW_2, scrollUp);
@@ -112,16 +113,10 @@ void IndexView::render(ProgramContext& context) {
     if (nbEntries > 0) {
         lcd.setCursor(0, 0);
         lcd.print(F("RUN #"));
-        lcd.print(entries[lineScroll].id);
+        lcd.print(entry.id);
 
         lcd.setCursor(7, 0);
         lcd.write(LCD_LEFT_ARROW);
-    }
-
-    if (lineScroll < nbEntries - 1) {
-        lcd.setCursor(0, 1);
-        lcd.print(F("RUN #"));
-        lcd.print(entries[lineScroll + 1].id);
     }
 }
 

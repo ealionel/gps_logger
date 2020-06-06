@@ -69,7 +69,7 @@ class IndexView : public LCDView {
 
     uint8_t lineScroll = 0;
     uint8_t nbEntries = 0;
-    LogIndexEntry* entries;
+    LogIndexEntry entry;
 };
 
 class NewLogView : public LCDView {

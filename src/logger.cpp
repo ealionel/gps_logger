@@ -273,6 +273,29 @@ LogIndexEntry *GPSLogger::loadIndexFile() {
     return entries;
 }
 
+LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
+    // if (id > getNbIndexEntries()) {
+    //     return (LogIndexEntry){0, "0", "0"};
+    // }
+
+    int n = 0;
+
+    File index = SD.open(getIndexPath(), FILE_READ);
+
+    while (index.available() && n < id) {
+        if (index.read() == '\n') n++;
+    }
+
+    int logId = index.readStringUntil(',').toInt();
+    String name = index.readStringUntil(',');
+    String date = index.readStringUntil('\n');
+
+    LogIndexEntry entry = createLogIndexEntry(logId, name, date);
+    index.close();
+
+    return entry;
+}
+
 void GPSLogger::sendFile(String fileName, String date) {
     File file = SD.open(root + fileName, FILE_READ);
     Serial.flush();

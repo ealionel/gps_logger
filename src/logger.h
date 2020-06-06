@@ -20,7 +20,7 @@ class GPSLogger {
     public:
         bool sdFailed = false;
         bool isLogging = false;
-        bool alwaysLog = true;
+        bool alwaysLog = false;
         int logInterval = 5;
         
         GPSLogger();
@@ -33,6 +33,7 @@ class GPSLogger {
         void setInterval(unsigned int interval);
 
         LogIndexEntry* loadIndexFile();
+        LogIndexEntry loadLogEntry(uint8_t id);
 
         // Compte le nombre d'entrées dans le fichier index
         int countIndexEntries();
