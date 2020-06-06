@@ -19,10 +19,10 @@ void printFile(String path);
 String twoDigit(int digit);
 
 // Formate une date d'un gps_fix en JJ/MM/AAAA
-String formatDate(gps_fix fix, String fallbackValue = "");
+void formatDate(char buffer[9], gps_fix fix); 
 
 // Formate un temps d'un gps_fix en HH:MM:SS 
-String formatTime(gps_fix fix, String fallbackValue = "");
+void formatTime(char buffer[9], gps_fix fix);
 
 // Converti les secondes en une chaine de caractère représentant les minutes
 String secToMin(int seconds);

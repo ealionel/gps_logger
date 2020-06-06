@@ -8,12 +8,12 @@
 
 typedef struct LogIndexEntry {
     uint8_t id;
-    String fileName;
     // int nbLogs; // Nombre de points enregistrés
-    String date;
+    char date[9];
+    char time[9];
 } LogIndexEntry;
 
-LogIndexEntry createLogIndexEntry(uint8_t id, String fileName, String date);
+LogIndexEntry createLogIndexEntry(uint8_t id, char date[9], char time[9]);
 void printLogIndexEntry(LogIndexEntry entry);
 
 class GPSLogger {
@@ -29,10 +29,9 @@ class GPSLogger {
         void log(gps_fix fix);
         void disable();
         void enable();
-        void setLogFile(String name);
         void setInterval(unsigned int interval);
 
-        LogIndexEntry* loadIndexFile();
+        // LogIndexEntry* loadIndexFile();
         LogIndexEntry loadLogEntry(uint8_t id);
 
         // Compte le nombre d'entrées dans le fichier index
@@ -56,19 +55,19 @@ class GPSLogger {
         // Retourne le chemin absolu du fichier index de ce repertoire
         String getIndexPath();
 
-        void writeCsvLine(File &file, gps_fix fix);
+        void writeCsvLine(File &file, gps_fix &fix);
         void writeFile(String filename, String line);
 
-        void newLogFile(gps_fix fix);
+        void newLogFile(gps_fix &fix);
 
         // Envoie le contenue de file (dans le dossier root) sur le port série
         // en suivant un protocole de communication custom
-        void sendFile(String file, String date);
+        void sendFile(LogIndexEntry entry);
 
         void printIndexFile();
         String root;
+        uint8_t logId;
     private:
-        String logFile;
 
         int nbIndexEntries;
         int logCounter = 1; // Compteur pour l'intervalle d'enregistrement

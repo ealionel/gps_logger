@@ -4,7 +4,7 @@
 #include <SD.h>
 #include <SPI.h>
 #include <Streamers.h>
-#include <EEPROM.h>
+// #include <EEPROM.h>
 
 #define TX_PIN 2
 #define RX_PIN 3
@@ -60,14 +60,18 @@ void setup() {
     lcd.createChar(0, CUSTOM_CHECKMARK);
 
     if (!SD.begin(SS_PIN)) {
-        Serial.println(F("SD failed"));
+        // Serial.println(F(""));
         context.logger.sdFailed = true;
     }
 
     context.logger.init();
 
-    File dir2 = SD.open("/LOGS");
-    printDirectory(dir2, 0);
+    // Serial.println(context.logger.getIndexPath());
+    // Serial.println(context.logger.getLogPath());
+    // File dir2 = SD.open("/LOGS");
+    // printDirectory(dir2, 0);
+
+    // context.logger.clearDirectory();
 
     context.logger.printIndexFile();
 
@@ -97,6 +101,10 @@ void loop() {
     while (gps.available(gpsPort)) {
         context.fix = gps.read();
         context.logger.log(context.fix);
+
+        if (context.logger.getNbIndexEntries() == 0 && context.fix.valid.date && context.fix.valid.time) {
+            context.logger.newLogFile(context.fix);
+        }
     }
 
     views.renderView();

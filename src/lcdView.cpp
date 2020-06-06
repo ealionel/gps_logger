@@ -1,9 +1,10 @@
 #include "lcdView.h"
 
-#include "buttons.h"
-#include "logger.h"
-#include "helper.h"
 #include <EEPROM.h>
+
+#include "buttons.h"
+#include "helper.h"
+#include "logger.h"
 
 // --- HOME ---
 void DefaultView::render(ProgramContext& context) {
@@ -15,18 +16,18 @@ void DefaultView::render(ProgramContext& context) {
         }
     };
 
-    // auto debug = [&context]() {
-    //     File logs = SD.open("/LOGS/");
-    //     printDirectory(logs, 0);
-    //     printFile(F("/LOGS/INDEX"));
-    // };
-    // onButtonPush(SW_2, debug);
+    auto debug = [&context]() {
+        File logs = SD.open(F("/LOGS/"));
+        printDirectory(logs, 0);
+        printFile(F("/LOGS/INDEX"));
+    };
+    onButtonPush(SW_2, debug);
+
 
     onButtonPush(SW_1, toggleLogging);
 
-
     lcd.setCursor(0, 0);
-    lcd.print(F("GPS: "));
+    lcd.print(F("GPS:"));
 
     lcd.setCursor(7, 0);
     if (context.fix.valid.location) {
@@ -37,7 +38,7 @@ void DefaultView::render(ProgramContext& context) {
 
     lcd.setCursor(0, 1);
 
-    lcd.print(F("Log: "));
+    lcd.print(F("Log:"));
 
     lcd.setCursor(7, 1);
     if (context.logger.isLogging) {
@@ -61,9 +62,13 @@ void CoordinateView::render(ProgramContext& context) {
         lcd.print(context.fix.latitude(), 6);
     } else {
         lcd.print(F("No GPS"));
-        lcd.setCursor(0,1);
+        lcd.setCursor(0, 1);
 
-        lcd.print(formatTime(context.fix));
+        if (context.fix.valid.time) {
+            char time[9];
+            formatTime(time, context.fix);
+            lcd.print(time);
+        }
     }
 }
 
@@ -85,25 +90,25 @@ void IndexView::render(ProgramContext& context) {
     }
 
     auto sendFileCallback = [this, &context]() {
-        context.logger.sendFile(this->entry.fileName, this->entry.date);
+        context.logger.sendFile(this->entry);
     };
 
     auto scrollDown = [this, &context]() {
         lcd.clear();
         if (this->lineScroll < this->nbEntries - 1) {
             this->lineScroll++;
+            this->entry = context.logger.loadLogEntry(lineScroll);
         }
 
-        this->entry = context.logger.loadLogEntry(lineScroll);
     };
-    
+
     auto scrollUp = [this, &context]() {
         lcd.clear();
         if (this->lineScroll >= 1) {
             this->lineScroll--;
+            this->entry = context.logger.loadLogEntry(lineScroll);
         }
 
-        this->entry = context.logger.loadLogEntry(lineScroll);
     };
 
     onButtonPush(SW_2, scrollUp);
@@ -125,11 +130,10 @@ void IndexView::render(ProgramContext& context) {
 void NewLogView::render(ProgramContext& context) {
     auto startNew = [&context]() {
         context.logger.newLogFile(context.fix);
-
         views.selectView(0);
     };
 
-    lcd.setCursor(0,0);
+    lcd.setCursor(0, 0);
     lcd.print(F("New log?"));
     lcd.setCursor(0, 1);
     lcd.write(LCD_RIGHT_ARROW);
@@ -145,19 +149,17 @@ SettingsView::SettingsView() {
     subViews[1] = &SettingsView::clearSettings;
 }
 
-void SettingsView::onEnter(ProgramContext& context) {
-    currentSubView = 0;
-}
+void SettingsView::onEnter(ProgramContext& context) { currentSubView = 0; }
 
 void SettingsView::onExit(ProgramContext& context) {
     EEPROM.put(EEPROM_LOGINTERVAL_ADDR, context.logger.logInterval);
 }
 
-
 void SettingsView::render(ProgramContext& context) {
     auto nextView = [this, &context]() {
         lcd.clear();
-        this->currentSubView = (this->currentSubView + 1) % NB_SETTINGS_SUBVIEWS;
+        this->currentSubView =
+            (this->currentSubView + 1) % NB_SETTINGS_SUBVIEWS;
     };
 
     onButtonPush(SW_3, nextView);
@@ -168,13 +170,13 @@ void SettingsView::render(ProgramContext& context) {
 void SettingsView::intervalSettings(ProgramContext& context) {
     auto incrementInterval = [&context]() {
         lcd.clear();
-        context.logger.logInterval += context.logger.logInterval == 1? 4:5;
+        context.logger.logInterval += context.logger.logInterval == 1 ? 4 : 5;
     };
 
     auto decrementInterval = [&context]() {
         lcd.clear();
         if (context.logger.logInterval >= 5) {
-            context.logger.logInterval-=5;
+            context.logger.logInterval -= 5;
         }
 
         if (context.logger.logInterval < 1) {
@@ -197,7 +199,6 @@ void SettingsView::clearSettings(ProgramContext& context) {
         context.logger.clearDirectory();
         views.selectView(0);
     };
-
 
     lcd.setCursor(0, 0);
     lcd.print(F("Reset?"));

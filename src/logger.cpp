@@ -5,15 +5,18 @@
 
 #define INDEX_FILE_NAME "INDEX"
 
-LogIndexEntry createLogIndexEntry(uint8_t id, String fileName, String date) {
-    LogIndexEntry entry = {id, fileName, date};
+LogIndexEntry createLogIndexEntry(uint8_t id, char date[9], char time[9]) {
+    LogIndexEntry entry;
+    entry.id = id;
+    strcpy(entry.date, date);
+    strcpy(entry.time, time);
     return entry;
 }
 
 void printLogIndexEntry(LogIndexEntry entry) {
     Serial.println("id\t" + String(entry.id, 10));
-    Serial.println("name\t" + entry.fileName);
-    Serial.println("date\t" + entry.date);
+    Serial.print("name\t");
+    Serial.println(entry.date);
 }
 
 GPSLogger::GPSLogger() {}
@@ -56,11 +59,9 @@ void GPSLogger::init(String root) {
     nbIndexEntries = countIndexEntries();
 
     if (nbIndexEntries == 0) {
-        // Si aucun fichier de log n'est présent on en crée au moins un
-        // Serial.println("New log file");
-        newLogFile((views.context)->fix);
+        logId = nbIndexEntries;
     } else {
-        logFile = getNbIndexEntries() - 1;
+        logId = nbIndexEntries - 1;
     }
 }
 
@@ -83,13 +84,17 @@ int GPSLogger::getNbIndexEntries() { return nbIndexEntries; }
 void GPSLogger::addIndexEntry(LogIndexEntry entry) {
     if (sdFailed) return;
 
+
     File index = SD.open(getIndexPath(), FILE_WRITE);
 
     index.print(entry.id);
     comma(index);
-    index.print(entry.fileName);
+
+    index.print(entry.date);
     comma(index);
-    index.println(entry.date);
+    
+    index.print(entry.time);
+    index.print('\n');
 
     index.close();
 
@@ -129,32 +134,32 @@ void GPSLogger::clearDirectory() {
     // Refait plus ou moins comme init() :
     initIndexFile();    // Recrée le fichier index
     nbIndexEntries = 0; // Remet le nombre d'entrées à 0
-    newLogFile((views.context)->fix);       // Recrée un nouveau fichier de log initial
+    // newLogFile((views.context)->fix);       // Recrée un nouveau fichier de log initial
 }
 
 void GPSLogger::disable() { isLogging = false; }
 
 void GPSLogger::enable() { isLogging = true; }
 
-void GPSLogger::setLogFile(String name) { logFile = name; }
-
 void GPSLogger::setInterval(unsigned int interval) { logInterval = interval; }
 
-String GPSLogger::getLogPath() { return root + logFile; }
+String GPSLogger::getLogPath() { return root + logId; }
 
 String GPSLogger::getIndexPath() { return root + INDEX_FILE_NAME; }
 
-void GPSLogger::newLogFile(gps_fix fix) {
-    logFile = getNbIndexEntries();
+void GPSLogger::newLogFile(gps_fix &fix) {
+    logId = getNbIndexEntries();
 
-    LogIndexEntry entry = createLogIndexEntry(
-                            getNbIndexEntries(),
-                            logFile,
-                            formatDate(fix) + F(" ") + formatTime(fix)
-                        );
+    char date[9];
+    char time[9];
+
+    formatDate(date, fix);
+    formatTime(time, fix);
+
+    LogIndexEntry entry = createLogIndexEntry(logId, date, time);
 
     addIndexEntry(entry);
-    writeFile(logFile, ""); // Crée un fichier vide
+    writeFile((String) logId, ""); // Crée un fichier vide
 }
 
 void GPSLogger::log(gps_fix fix) {
@@ -180,20 +185,26 @@ void GPSLogger::writeFile(String filename, String line) {
     if (sdFailed) return;
 
     File file = SD.open(root + filename, FILE_WRITE);
-    file.println(line);
+    file.print(line);
     file.close();
 }
 
-void GPSLogger::writeCsvLine(File &file, gps_fix fix) {
+void GPSLogger::writeCsvLine(File &file, gps_fix &fix) {
 
     // DATE
-    if (fix.valid.time)
-        file.print(formatDate(fix));
+    if (fix.valid.time) {
+        char date[9];
+        formatDate(date, fix);
+        file.print(date);
+    }
     
     // TIME
     comma(file);
-    if (fix.valid.time)
-        file.print(formatTime(fix));
+    if (fix.valid.time) {
+        char time[9];
+        formatTime(time, fix);
+        file.print(time);
+    }
 
     // LATITUDE + LONGITUDE
     comma(file);
@@ -254,54 +265,65 @@ void GPSLogger::initIndexFile() {
     index.close();
 }
 
-LogIndexEntry *GPSLogger::loadIndexFile() {
-    if (sdFailed) return NULL;
+// LogIndexEntry *GPSLogger::loadIndexFile() {
+//     if (sdFailed) return NULL;
 
-    File index = SD.open(getIndexPath(), FILE_READ);
+//     File index = SD.open(getIndexPath(), FILE_READ);
 
-    LogIndexEntry *entries = new LogIndexEntry[getNbIndexEntries()];
+//     LogIndexEntry *entries = new LogIndexEntry[getNbIndexEntries()];
 
-    for (int i = 0; i < getNbIndexEntries(); i++) {
-        int id = index.readStringUntil(',').toInt();
-        String name = index.readStringUntil(',');
-        String date = index.readStringUntil('\n');
+//     for (int i = 0; i < getNbIndexEntries(); i++) {
+//         int id = index.readStringUntil(',').toInt();
+//         String name = index.readStringUntil(',');
+//         String date = index.readStringUntil('\n');
 
-        entries[i] = createLogIndexEntry(id, name, date);
-    }
+//         entries[i] = createLogIndexEntry(id, name, date);
+//     }
 
-    index.close();
-    return entries;
-}
+//     index.close();
+//     return entries;
+// }
 
 LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
-    // if (id > getNbIndexEntries()) {
-    //     return (LogIndexEntry){0, "0", "0"};
-    // }
-
-    int n = 0;
-
     File index = SD.open(getIndexPath(), FILE_READ);
 
+    int n = 0;
     while (index.available() && n < id) {
         if (index.read() == '\n') n++;
     }
 
-    int logId = index.readStringUntil(',').toInt();
-    String name = index.readStringUntil(',');
-    String date = index.readStringUntil('\n');
+    int read = 0;
 
-    LogIndexEntry entry = createLogIndexEntry(logId, name, date);
+    char id_buffer[3]; // maximum 2 digits ID
+    read = index.readBytesUntil(',', id_buffer, 3);
+    id_buffer[read] = '\0';
+
+    char date[9]; // une date contient 8 caractères + null char
+    read = index.readBytesUntil(',', date, 9);
+    date[read] = '\0';
+    
+    char time[9]; // 8 char + null char
+    read = index.readBytesUntil('\n', time, 9);
+    time[read] = '\0';
+
+    LogIndexEntry entry = createLogIndexEntry(
+        atoi(id_buffer),
+        date,
+        time
+    );
+
     index.close();
 
     return entry;
 }
 
-void GPSLogger::sendFile(String fileName, String date) {
-    File file = SD.open(root + fileName, FILE_READ);
+void GPSLogger::sendFile(LogIndexEntry entry) {
+    File file = SD.open(root + entry.id, FILE_READ);
     Serial.flush();
     Serial.println(F("CMD_FS"));
-    Serial.println(fileName);
-    Serial.println(date);
+    Serial.println(entry.id);
+    Serial.println(entry.date);
+    Serial.println(entry.time);
     
     while (file.available() > 0) {
         Serial.write(file.read());

@@ -44,30 +44,29 @@ String twoDigit(int digit) {
     return digit < 10 ? "0" + String(digit) : String(digit);
 }
 
-String formatDate(gps_fix fix, String fallbackValue) {
-    if (fix.valid.date)
-        return twoDigit(fix.dateTime.day) + String(F("/")) + twoDigit(fix.dateTime.month) + F("/") + fix.dateTime.year;
-
-    return fallbackValue;
+void formatDate(char buffer[9], gps_fix fix) {
+    if (fix.valid.date) {
+        snprintf(buffer, 9, "%d/%d/%d", fix.dateTime.day,
+                 fix.dateTime.month, fix.dateTime.year);
+    } else {
+        buffer[0] = '\0';
+    }
 }
 
-String formatTime(gps_fix fix, String fallbackValue) {
-    if (fix.valid.time)
-        return twoDigit(fix.dateTime.hours) + String(F(":"))
-               + twoDigit(fix.dateTime.minutes) + F(":")
-               + twoDigit(fix.dateTime.seconds);
-
-    return fallbackValue;
+void formatTime(char buffer[9], gps_fix fix) {
+    if (fix.valid.time) {
+        snprintf(buffer, 9, "%d:%d:%d", fix.dateTime.hours,
+                 fix.dateTime.minutes, fix.dateTime.seconds);
+    } else {
+        buffer[0] = '\0';
+    }
 }
 
 String secToMin(int seconds) {
     return String(seconds / 60) + F("mn ") + (seconds % 60) + F("s");
 }
 
-void comma(File& file) {
-    file.print(',');
-}
+void comma(File& file) { file.print(','); }
 
 template <typename F>
-void setInterval(int interval, int currentTime, F& callback) {
-}
+void setInterval(int interval, int currentTime, F& callback) {}
