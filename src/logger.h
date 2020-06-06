@@ -21,7 +21,7 @@ class GPSLogger {
         bool sdFailed = false;
         bool isLogging = false;
         bool alwaysLog = false;
-        int logInterval = 5;
+        uint16_t logInterval = 5;
         
         GPSLogger();
 
@@ -56,7 +56,10 @@ class GPSLogger {
         String getIndexPath();
 
         void writeCsvLine(File &file, gps_fix &fix);
+
         void writeFile(String filename, String line);
+
+        int countLogs(uint8_t id);
 
         void newLogFile(gps_fix &fix);
 
@@ -66,11 +69,16 @@ class GPSLogger {
 
         void printIndexFile();
         String root;
+
+        // ID du fichier de log actuel
         uint8_t logId;
+
+        // Nombre de points enregistrés dans le log actuel
+        uint16_t logsCount = 0;
     private:
 
         int nbIndexEntries;
-        int logCounter = 1; // Compteur pour l'intervalle d'enregistrement
+        int logIntervalCnt = 1; // Compteur pour l'intervalle d'enregistrement
 };
 
 #endif

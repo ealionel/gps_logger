@@ -13,6 +13,10 @@
 // Adresse EEPROM du paramètre logInterval (int=2bytes)
 #define EEPROM_LOGINTERVAL_ADDR 0
 
+// Adresse EEPROM de la valeur comptant le nombre de points du parcours actuel
+// (uint16_t = 2 bytes)
+#define EEPROM_LOGCOUNT_ADDR 3
+
 
 class LCDViewManager;  // forward declaration
 

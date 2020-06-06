@@ -103,6 +103,7 @@ void loop() {
         context.logger.log(context.fix);
 
         if (context.logger.getNbIndexEntries() == 0 && context.fix.valid.date && context.fix.valid.time) {
+            // Permet d'initialiser le fichier d'index
             context.logger.newLogFile(context.fix);
         }
     }

@@ -24,14 +24,13 @@ GPSLogger::GPSLogger() {}
 void GPSLogger::init(String root) {
     if (sdFailed) return;
 
-    int eepromInterval;
-    EEPROM.get(EEPROM_LOGINTERVAL_ADDR, eepromInterval);
+    uint16_t eepromVal;
 
-    if (eepromInterval != 0) {
-        // Dans le cas où l'EEPROM ne serait pas initialisé
-        // Ne devrait jamais arriver
-        logInterval = eepromInterval;
-    }
+    // Initialisation du paramètre d'intervalle de log
+    EEPROM.get(EEPROM_LOGINTERVAL_ADDR, eepromVal);
+    if (eepromVal != 0)
+        // Dans le cas où l'EEPROM ne serait pas initialisé (valeur 0)
+        logInterval = eepromVal;
 
     this->root = root;
 
@@ -92,7 +91,7 @@ void GPSLogger::addIndexEntry(LogIndexEntry entry) {
 
     index.print(entry.date);
     comma(index);
-    
+
     index.print(entry.time);
     index.print('\n');
 
@@ -166,7 +165,7 @@ void GPSLogger::log(gps_fix fix) {
     if (sdFailed) return;
     
     if (isLogging && (fix.valid.location || alwaysLog)) {
-        if (logCounter == logInterval) {
+        if (logIntervalCnt == logInterval) {
             File file = SD.open(getLogPath(), FILE_WRITE);
             if (file) {
                 writeCsvLine(file, fix);
@@ -174,9 +173,9 @@ void GPSLogger::log(gps_fix fix) {
 
             file.close();
 
-            logCounter = 1;
+            logIntervalCnt = 1;
         } else {
-            logCounter++;
+            logIntervalCnt++;
         }
     }
 }
@@ -283,6 +282,20 @@ void GPSLogger::initIndexFile() {
 //     index.close();
 //     return entries;
 // }
+
+int GPSLogger::countLogs(uint8_t id) {
+    File f = SD.open(root + id, FILE_READ);
+
+    int n;
+
+    while (f.available()) {
+        if (f.read() == '\n') n++;
+    }
+    
+    f.close();
+
+    return n - 1;
+}
 
 LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
     File index = SD.open(getIndexPath(), FILE_READ);
