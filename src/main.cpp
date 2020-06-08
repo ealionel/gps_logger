@@ -20,7 +20,7 @@ ButtonId lastButtonState;
 #include "lcdView.h"
 #include "helper.h"
 #include "logger.h"
-
+#include "command.h"
 
 #define VBAT_PIN A0  // Battery voltage pin
 
@@ -39,6 +39,7 @@ NewLogView newLogView;
 
 // ----------------------------
 
+char cmd_buffer[17];
 
 // --- Custom Characters Initialization ---
 
@@ -96,6 +97,16 @@ void loop() {
     onButtonPush(SW_4, []() {
         views.selectNextView();
     });
+
+    while (Serial.available() > 0) {
+        size_t n = readBytesStringUntil(&Serial, '\n', cmd_buffer, 16);
+        // String s = Serial.readStringUntil('\n');
+
+        // Serial.println(s);
+        
+
+        handleCommand(cmd_buffer, n);
+    }
 
 
     while (gps.available(gpsPort)) {

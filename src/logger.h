@@ -31,7 +31,6 @@ class GPSLogger {
         void enable();
         void setInterval(unsigned int interval);
 
-        // LogIndexEntry* loadIndexFile();
         LogIndexEntry loadLogEntry(uint8_t id);
 
         // Compte le nombre d'entrées dans le fichier index
@@ -59,6 +58,8 @@ class GPSLogger {
 
         void writeFile(String filename, String line);
 
+        // Retourne le nombre de lignes dans le fichier de log avec l'id donné
+        // (retire le trailing \n donc retourne n-1)
         int countLogs(uint8_t id);
 
         void newLogFile(gps_fix &fix);
@@ -78,7 +79,7 @@ class GPSLogger {
     private:
 
         int nbIndexEntries;
-        int logIntervalCnt = 1; // Compteur pour l'intervalle d'enregistrement
+        uint16_t logIntervalCnt = 1; // Compteur pour l'intervalle d'enregistrement
 };
 
 #endif

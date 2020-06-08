@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "helper.h"
 #include "globalState.h"
+#include "command.h"
 #include <EEPROM.h>
 
 #define INDEX_FILE_NAME "INDEX"
@@ -264,36 +265,13 @@ void GPSLogger::initIndexFile() {
     index.close();
 }
 
-// LogIndexEntry *GPSLogger::loadIndexFile() {
-//     if (sdFailed) return NULL;
-
-//     File index = SD.open(getIndexPath(), FILE_READ);
-
-//     LogIndexEntry *entries = new LogIndexEntry[getNbIndexEntries()];
-
-//     for (int i = 0; i < getNbIndexEntries(); i++) {
-//         int id = index.readStringUntil(',').toInt();
-//         String name = index.readStringUntil(',');
-//         String date = index.readStringUntil('\n');
-
-//         entries[i] = createLogIndexEntry(id, name, date);
-//     }
-
-//     index.close();
-//     return entries;
-// }
-
 int GPSLogger::countLogs(uint8_t id) {
     File f = SD.open(root + id, FILE_READ);
-
     int n;
-
     while (f.available()) {
         if (f.read() == '\n') n++;
-    }
-    
+    }    
     f.close();
-
     return n - 1;
 }
 
@@ -305,19 +283,14 @@ LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
         if (index.read() == '\n') n++;
     }
 
-    int read = 0;
-
     char id_buffer[3]; // maximum 2 digits ID
-    read = index.readBytesUntil(',', id_buffer, 3);
-    id_buffer[read] = '\0';
+    readBytesStringUntil(&index, ',', id_buffer, 3);
 
     char date[9]; // une date contient 8 caractères + null char
-    read = index.readBytesUntil(',', date, 9);
-    date[read] = '\0';
+    readBytesStringUntil(&index, ',', date, 9);
     
     char time[9]; // 8 char + null char
-    read = index.readBytesUntil('\n', time, 9);
-    time[read] = '\0';
+    readBytesStringUntil(&index, '\n', time, 9);
 
     LogIndexEntry entry = createLogIndexEntry(
         atoi(id_buffer),
@@ -332,8 +305,8 @@ LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
 
 void GPSLogger::sendFile(LogIndexEntry entry) {
     File file = SD.open(root + entry.id, FILE_READ);
-    Serial.flush();
-    Serial.println(F("CMD_FS"));
+
+    Serial.println(F(CMD_DL));
     Serial.println(entry.id);
     Serial.println(entry.date);
     Serial.println(entry.time);
@@ -341,7 +314,7 @@ void GPSLogger::sendFile(LogIndexEntry entry) {
     while (file.available() > 0) {
         Serial.write(file.read());
     }
-    Serial.println(F("CMD_FS_"));
+    Serial.println(F(CMD_DL_END));
 
     file.close();
 }

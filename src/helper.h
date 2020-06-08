@@ -31,7 +31,9 @@ String secToMin(int seconds);
 // Économise 1 byte au lieu de faire file.print(F(","))
 void comma(File& file);
 
-template <typename F>
-void setInterval(int time, F& callback);
+// Wrapper de Stream::readBytesUntil mais rajoute un null terminator à la fin du buffer
+size_t readBytesStringUntil(Stream* s, char terminator, char* buffer, size_t length);
+
+
 
 #endif

@@ -68,5 +68,9 @@ String secToMin(int seconds) {
 
 void comma(File& file) { file.print(','); }
 
-template <typename F>
-void setInterval(int interval, int currentTime, F& callback) {}
+size_t readBytesStringUntil(Stream* stream, char terminator, char* buffer, size_t length) {
+    size_t l = stream->readBytesUntil(terminator, buffer, length);
+    buffer[l] = '\0';
+
+    return l + 1;
+}
