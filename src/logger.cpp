@@ -304,6 +304,7 @@ LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
 }
 
 void GPSLogger::sendFile(LogIndexEntry entry) {
+
     File file = SD.open(root + entry.id, FILE_READ);
 
     Serial.println(F(CMD_DL));

@@ -11,7 +11,6 @@ void cmdList() {
     Serial.println(F(CMD_LS_END));
 }
 
-
 void cmdDownload(char args[MAX_CMD_ARGS_LENGTH][MAX_CMD_ARGS], uint8_t nbArgs) {
     for (uint8_t i = 1; i < nbArgs; i++) {
         uint8_t id = atoi(args[i]);
@@ -24,13 +23,30 @@ void handleCommand(char* cmd, size_t length) {
     char args[MAX_CMD_ARGS_LENGTH][MAX_CMD_ARGS];
     uint8_t n = parseCommand(cmd, length, args);
 
-    Serial.print("cmd : ");
-    Serial.println(args[0]);
-
     if (strcmp(args[0], CMD_LS) == 0) {
         cmdList();
     } else if (strcmp(args[0], CMD_DL) == 0 ) {
         cmdDownload(args, n);
+    }
+}
+
+void cmdDownloadMinimal(int8_t id) {
+    if (id >= views.context->logger.getNbIndexEntries()) {
+        Serial.println(CMD_ERROR);
+        return;
+    }
+
+    LogIndexEntry entry = views.context->logger.loadLogEntry(id);
+    views.context->logger.sendFile(entry);
+}
+
+void handleCommandMinimal(int8_t cmd) {
+    if (cmd >= 0) {
+        cmdDownloadMinimal(cmd);
+    } else if (cmd == -1) {
+        cmdList();
+    } else {
+        Serial.println(CMD_ERROR);
     }
 }
 

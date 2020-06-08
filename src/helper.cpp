@@ -37,6 +37,8 @@ void printFile(String path) {
         // Serial.println(path);
     }
 
+    Serial.flush();
+
     file.close();
 }
 

@@ -61,11 +61,12 @@ void setup() {
     lcd.createChar(0, CUSTOM_CHECKMARK);
 
     if (!SD.begin(SS_PIN)) {
-        // Serial.println(F(""));
         context.logger.sdFailed = true;
     }
 
     context.logger.init();
+
+    Serial.println("i"); // Serial initialization..?
 
     // Serial.println(context.logger.getIndexPath());
     // Serial.println(context.logger.getLogPath());
@@ -74,7 +75,7 @@ void setup() {
 
     // context.logger.clearDirectory();
 
-    context.logger.printIndexFile();
+    // context.logger.printIndexFile();
 
     views.addView(&defaultView);
     views.addView(&coordinateView);
@@ -89,6 +90,7 @@ void setup() {
     lcd.begin(8, 2);
 }
 
+int8_t input;
 
 void loop() {
     buttonState = readButton();
@@ -98,14 +100,14 @@ void loop() {
         views.selectNextView();
     });
 
-    while (Serial.available() > 0) {
-        size_t n = readBytesStringUntil(&Serial, '\n', cmd_buffer, 16);
+    while (Serial.available()) {
+        // Serial.flush();
+        // size_t n = readBytesStringUntil(&Serial, '\n', cmd_buffer, 16);
         // String s = Serial.readStringUntil('\n');
 
-        // Serial.println(s);
-        
-
-        handleCommand(cmd_buffer, n);
+        input = Serial.read();
+        // Serial.println(input);
+        handleCommandMinimal(input);
     }
 
 
