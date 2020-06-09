@@ -1,5 +1,6 @@
 import serial
 import sys
+import time
 
 dev = serial.Serial('/dev/ttyUSB0', 115200)
 
@@ -66,6 +67,8 @@ def read_output():
             parsed += line + '\n'
 
         save_log_file(log_id, date, time, parsed)
+    else:
+        print('Unknown token received')
 
     return parsed
 
@@ -105,14 +108,20 @@ def parse_index_entry(line):
     return entry
 
 if __name__ == "__main__":
+    if (len(sys.argv) < 2):
+        print('You must specify a command')
+        exit
+
     cmd = sys.argv[1]
     arg = -2
 
     if (len(sys.argv) > 2):
         arg = sys.argv[2]
 
-    while (dev.in_waiting):
-        dev.readline()
+    # Token sent by arduino when initialized
+    while (True):
+        if (next_line(dev) == 'i'):
+            break
 
     coded_cmd = get_cmd(cmd, arg)
     dev.write(coded_cmd)
