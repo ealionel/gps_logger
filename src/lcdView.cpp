@@ -77,7 +77,7 @@ void CoordinateView::render(ProgramContext& context) {
 void IndexView::onEnter(ProgramContext& context) {
     lineScroll = 0;
     nbEntries = context.logger.getNbIndexEntries();
-    entry = context.logger.loadLogEntry(lineScroll);
+    entry = context.logger.parseLogEntry(lineScroll);
 }
 
 void IndexView::onExit(ProgramContext& context) {}
@@ -97,7 +97,7 @@ void IndexView::render(ProgramContext& context) {
         lcd.clear();
         if (this->lineScroll < this->nbEntries - 1) {
             this->lineScroll++;
-            this->entry = context.logger.loadLogEntry(lineScroll);
+            this->entry = context.logger.parseLogEntry(lineScroll);
         }
 
     };
@@ -106,7 +106,7 @@ void IndexView::render(ProgramContext& context) {
         lcd.clear();
         if (this->lineScroll >= 1) {
             this->lineScroll--;
-            this->entry = context.logger.loadLogEntry(lineScroll);
+            this->entry = context.logger.parseLogEntry(lineScroll);
         }
 
     };

@@ -275,7 +275,7 @@ int GPSLogger::countLogs(uint8_t id) {
     return n - 1;
 }
 
-LogIndexEntry GPSLogger::loadLogEntry(uint8_t id) {
+LogIndexEntry GPSLogger::parseLogEntry(uint8_t id) {
     File index = SD.open(getIndexPath(), FILE_READ);
 
     int n = 0;

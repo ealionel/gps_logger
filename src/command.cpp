@@ -14,7 +14,7 @@ void cmdList() {
 void cmdDownload(char args[MAX_CMD_ARGS_LENGTH][MAX_CMD_ARGS], uint8_t nbArgs) {
     for (uint8_t i = 1; i < nbArgs; i++) {
         uint8_t id = atoi(args[i]);
-        LogIndexEntry entry = views.context->logger.loadLogEntry(id);
+        LogIndexEntry entry = views.context->logger.parseLogEntry(id);
         views.context->logger.sendFile(entry);
     }
 }
@@ -36,7 +36,7 @@ void cmdDownloadMinimal(int8_t id) {
         return;
     }
 
-    LogIndexEntry entry = views.context->logger.loadLogEntry(id);
+    LogIndexEntry entry = views.context->logger.parseLogEntry(id);
     views.context->logger.sendFile(entry);
 }
 

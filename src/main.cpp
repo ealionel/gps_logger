@@ -66,7 +66,7 @@ void setup() {
 
     context.logger.init();
 
-    Serial.println("i"); // Serial initialization..?
+    Serial.println("i"); // Serial initialization token
 
     // Serial.println(context.logger.getIndexPath());
     // Serial.println(context.logger.getLogPath());

@@ -31,7 +31,7 @@ class GPSLogger {
         void enable();
         void setInterval(unsigned int interval);
 
-        LogIndexEntry loadLogEntry(uint8_t id);
+        LogIndexEntry parseLogEntry(uint8_t id);
 
         // Compte le nombre d'entrées dans le fichier index
         int countIndexEntries();
